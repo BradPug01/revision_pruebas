@@ -10,9 +10,11 @@ Ejercicios sobre manipulacion de datos
 
 #%% Ejercicio 1 : Comprension y Manipulacion de Base de Datos
 #Importacion de la base de datos
+
 # Debemos usar proyectos
 # path = 'C:\\Users\\LuisPortilla\\Downloads\\Prueba Ergostats\\Tomo I\\'
 df = pd.read_csv('data/INEC_Encuesta Estructural Empresarial_Tomo I_2021.csv', delimiter = ';')
+
  
 #Impresion de las primeras 10 filas de la base de datos
 print (df.head(10))
@@ -126,4 +128,8 @@ plt.ylabel('Numero de Empresas')
 plt.title('Relacion Valor Agregado Bruto y Numero de Empresas')
 plt.grid(True)
 plt.savefig('NumEmpresas_ValorAgregado.png', bbox_inches='tight', dpi= 600)
+<<<<<<< HEAD
 plt.show()
+=======
+plt.show()
+>>>>>>> e5d0c97c2ae7a62b4723e910897ffa6e23b7964e
