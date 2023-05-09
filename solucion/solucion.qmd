@@ -1,0 +1,11 @@
+---
+title: "Untitled"
+format: html
+editor: visual
+---
+
+```{python}
+
+df = pd.read_csv('../data/INEC_Encuesta Estructural Empresarial_Tomo I_2021.csv', delimiter = ';')
+
+```
