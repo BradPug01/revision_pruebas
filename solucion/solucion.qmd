@@ -4,8 +4,20 @@ format: html
 editor: visual
 ---
 
+### Ejericio 1:
+
+Lectura de la base:
+
 ```{python}
 
 df = pd.read_csv('../data/INEC_Encuesta Estructural Empresarial_Tomo I_2021.csv', delimiter = ';')
+
+```
+
+Seleccionar las variables y mostrar las 10 primeras filas:
+
+```{python}
+
+# Codigo
 
 ```
