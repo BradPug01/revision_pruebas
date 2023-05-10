@@ -115,3 +115,23 @@ print(resumen)
 ### Ejercicio 1: Diagrama de barras por provincia
 
 ### Ejercicio 2: Diagrama de dispersion del numero de empresas y su valor agregado bruto
+
+Se calcula el valor agregado por provincia y se lo agrega a un dataset donde tambien se tenga el conteo de empresas existentes en estos territorios:
+
+```{python}
+df_agrupado = df.groupby('des_provincias').agg({'valag':'sum', 'id_empresa':'count'})
+
+plt.figure(figsize=(10,6))
+scatter = plt.scatter(df_agrupado['valag'], df_agrupado['id_empresa'], c=range(len(df_agrupado)), cmap='viridis')
+plt.xlabel('Valor Agregado Bruto')
+plt.ylabel('Numero de Empresas')
+plt.title('Relacion Valor Agregado Bruto y Numero de Empresas')
+plt.grid(True)
+plt.savefig('NumEmpresas_ValorAgregado.png', bbox_inches='tight', dpi= 600)
+<<<<<<< HEAD
+plt.show()
+=======
+plt.show()
+>>>>>>> e5d0c97c2ae7a62b4723e910897ffa6e23b7964e
+
+```
