@@ -7,8 +7,20 @@ editor: visual
 ## Ejercicios sobre manipulacion de datos
 
 ### Ejercicio 1: Comprension y Manipulacion de Bases de Datos
+Carga de las librerias
+```{r}
+library(readxl)
+library(readr)
+library(tidyverse)
+library(psych)
+library(ggplot2)
+library(dplyr)
+```
 
 Lectura de la base:
+```{r}
+Base1<-read_csv2("../data/INEC_Encuesta Estructural Empresarial_Tomo I_2021.csv")
+```
 
 ```{python}
 
@@ -18,11 +30,23 @@ df = pd.read_csv('../data/INEC_Encuesta Estructural Empresarial_Tomo I_2021.csv'
 
 Seleccionar las variables y mostrar las 10 primeras filas:
 
-```{python}
+```{r}
 
-# Codigo
+diezfilas=Base1[1:10,]
+print(diezfilas)
 
 ```
+Variables que contienen información sobre el identificador del establecimiento, su actividad económica y la provincia donde se encuentra ubicado:
+
+```{r}
+id_estable<-Base1$id_empresa
+act_econ<-Base1$des_letra
+prov<-Base1$provincia
+print(id_estable)
+print(act_econ)
+print(prov)
+```
+
 
 ### **Ejercicio 2: Generacion de estadisticas de resumen**
 
@@ -85,6 +109,21 @@ print(conteo_provincia)
 
 ### Ejercicio 3: Comparacion de grupos dentro de los datos
 
+Número de empresas en pichincha que pertenecen a una actividad económica específica:
+
+```{r}
+Pic=filter(Base1,provincia==17)
+nPic=count(group_by(Pic,des_letra))
+print(nPic)
+```
+
+Número de trabajadores promedio en las empresas:
+```{r}
+nt=group_by(Pic,des_letra)%>%
+  summarise(prom_tra=mean(v5090))
+print(nt)
+```
+
 ### **Ejercicio 4: Analisis de Patrones**
 
 Ahora creamos una tabla de frecuencias por provincias de empresas que tienen mas de 50 empleados:
@@ -110,9 +149,76 @@ resumen.columns = ['Frecuencia', 'Frecuencia Acumulada', 'Porcentaje']
 print(resumen)
 ```
 
+###Ejercicio 5: Manipulación avanzada de una base de datos
+
+Creación de una variable que indica si el establecimiento tiene más de 10 años de antigüedad:
+
+```{r}
+Base13=Base1%>%
+  mutate(
+    antiguedad=ifelse(anio_ruc_dis<2009,1,0)
+  )
+```
+
+Base de datos que contiene a los establecimientos que tienen más de 10 años de antigüedad y que tienen más de 20 trabajadores:
+```{r}
+Base14=filter(Base13,antiguedad>0 & v5090>20)
+```
+
 ## Ejercicios sobre visualizacion de datos
 
 ### Ejercicio 1: Diagrama de barras por provincia
+Es necesaria una parte del código del ejercicio 4
+```{r,eval=FALSE}
+Base12=Base1%>%
+  mutate(
+    traba50=ifelse(v5090>=50,1,0)
+  )
+#a)
+np=filter(Base12,traba50==1)
+numero_empresasprov50=count(group_by(np,provincia))
+#print(numero_empresasprov50)
+#b)
+numero_empresasprov=count(group_by(Base1,provincia))
+#print(numero_empresasprov)
+porcentajes=(numero_empresasprov50$n/numero_empresasprov$n)*100
+numero_empresasprov50$Porcentajes=porcentajes
+#print(numero_empresasprov50)
+```
+
+Diagrama de barras que muestra el número de empresas por provincia:
+```{r,echo=FALSE}
+prv=transmute(numero_empresasprov,provincia=case_when(provincia=='01'~'Azuay',
+                                         provincia=='02'~'Bolívar',
+                                         provincia=='03'~ 'Cañar',
+                                         provincia=='04'~ 'Carchi',
+                                         provincia=='05'~ 'Cotopaxi',
+                                         provincia=='06'~ 'Chimborazo',
+                                         provincia=='07'~ 'El Oro',
+                                         provincia=='08'~ 'Esmeraldas',
+                                         provincia=='09'~ 'Guayas',
+                                         provincia=='10'~ 'Imbabura',
+                                         provincia=='11'~ 'Loja',
+                                         provincia=='12'~ 'Los Rios',
+                                         provincia=='13'~ 'Manabí',
+                                         provincia=='14'~ 'Morona Santiago',
+                                         provincia=='15'~ 'Napo',
+                                         provincia=='16'~ 'Pastaza',
+                                         provincia=='17'~ 'Pichincha',
+                                         provincia=='18'~ 'Tungurahua',
+                                         provincia=='19'~ 'Zamora',
+                                         provincia=='20'~ 'Galápagos',
+                                         provincia=='21'~ 'Sucumbíos',
+                                         provincia=='22'~ 'Orellana',
+                                         provincia=='23'~ 'Santo Domingo',
+                                         provincia=='24'~ 'Santa Elena'))
+numero_empresasprov$provincianame=prv
+colnames(numero_empresasprov)<-c('nprovincia','n','Provincia')
+ggplot(numero_empresasprov)+geom_bar(aes(x=Provincia$provincia,y=n),stat="identity")+labs(x="Provincia",y='Número de empresas')+theme(axis.text = element_text(angle = 90))
+
+
+
+```
 
 ### Ejercicio 2: Diagrama de dispersion del numero de empresas y su valor agregado bruto
 
