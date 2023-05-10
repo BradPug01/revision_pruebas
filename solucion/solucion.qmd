@@ -4,6 +4,8 @@ format: html
 editor: visual
 ---
 
+## Ejercicios sobre manipulacion de datos
+
 ### Ejercicio 1: Comprension y Manipulacion de Bases de Datos
 
 Lectura de la base:
@@ -81,4 +83,35 @@ conteo_provincia = df.groupby('des_provincias')['id_empresa'].count()
 print(conteo_provincia)
 ```
 
+### Ejercicio 3: Comparacion de grupos dentro de los datos
+
 ### **Ejercicio 4: Analisis de Patrones**
+
+Ahora creamos una tabla de frecuencias por provincias de empresas que tienen mas de 50 empleados:
+
+```{python}
+df_50trab = df[df['tafiliados'] > 50 ]
+tab_freq_emp = df_50trab.groupby('des_provincias')['id_empresa'].count()
+acumulado = tab_freq_emp.cumsum()
+freq_df = pd.concat([tab_freq_emp, acumulado], axis=1)
+freq_df.columns = ['Frequencia', 'Frecuencia Acumulada']
+print(freq_df)
+```
+
+Calculando entonces tambien el porcentaje de empresas con mas de 50 empleados por provincia:
+
+```{python}
+total = df.groupby('des_provincias')['id_empresa'].nunique()
+porcentaje = tab_freq_emp / total 
+
+resumen = pd.concat([tab_freq_emp, acumulado, porcentaje], axis=1)
+resumen.columns = ['Frecuencia', 'Frecuencia Acumulada', 'Porcentaje']
+
+print(resumen)
+```
+
+## Ejercicios sobre visualizacion de datos
+
+### Ejercicio 1: Diagrama de barras por provincia
+
+### Ejercicio 2: Diagrama de dispersion del numero de empresas y su valor agregado bruto
