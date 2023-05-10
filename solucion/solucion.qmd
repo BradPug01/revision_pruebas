@@ -1,10 +1,10 @@
 ---
-title: "Untitled"
+title: "Solucion Prueba"
 format: html
 editor: visual
 ---
 
-### Ejericio 1:
+### Ejercicio 1: Comprension y Manipulacion de Bases de Datos
 
 Lectura de la base:
 
@@ -21,3 +21,64 @@ Seleccionar las variables y mostrar las 10 primeras filas:
 # Codigo
 
 ```
+
+### **Ejercicio 2: Generacion de estadisticas de resumen**
+
+Cargamos las librerias de para trabajar en python:
+
+```{python}
+import pandas as pd
+import matplotlib.pyplot as plt
+import numpy as np
+import sys
+```
+
+Mostramos la version de python con que trabajamos:
+
+```{python}
+print(sys.version)
+```
+
+Con la base ya importada anteriormente procedemos a obtener la estadistica descriptiva de la variable de trabajadores afiliados en la empresa:
+
+```{python}
+df.rename(columns={'v5090':'tafiliados'}, inplace=True)
+print (df['tafiliados'].describe())
+```
+
+Ahora se procede a obtener el numero de empresas por provincia:
+
+```{python}
+provincias ={
+    1:'Azuay',
+    2:'Bolivar',
+    3:'Cañar',
+    4:'Carchi',
+    5:'Cotopaxi',
+    6:'Chimborazo',
+    7:'El Oro',
+    8:'Esmeraldas',
+    9:'Guayas',
+    10:'Imbabura',
+    11:'Loja',
+    12:'Los Rios',
+    13:'Manabi',
+    14:'Morona Santiago',
+    15:'Napo',
+    16:'Pastaza',
+    17:'Pichincha',
+    18: 'Tungurahua',
+    19: 'Zamora Chinchipe',
+    20: 'Galapagos',
+    21: 'Sucumbios',
+    22: 'Orellana',
+    23: 'Santo Domingo de los Tsachilas',
+    24: 'Santa Elena'}
+
+df['des_provincias'] = df['provincia'].map(provincias)
+
+conteo_provincia = df.groupby('des_provincias')['id_empresa'].count()
+print(conteo_provincia)
+```
+
+### **Ejercicio 4: Analisis de Patrones**
