@@ -65,6 +65,11 @@ Mostramos la version de python con que trabajamos:
 print(sys.version)
 ```
 
+Ahora importamos la base para trabajar en python:
+```{python}
+df = pd.read_csv('data/INEC_Encuesta Estructural Empresarial_Tomo I_2021.csv', delimiter = ';')
+```
+
 Con la base ya importada anteriormente procedemos a obtener la estadistica descriptiva de la variable de trabajadores afiliados en la empresa:
 
 ```{python}
