@@ -4,53 +4,17 @@ format: html
 editor: visual
 ---
 
-## Ejercicios sobre manipulacion de datos
+Carga de las librerias módulos modulos:
 
-### Ejercicio 1: Comprension y Manipulacion de Bases de Datos
-Carga de las librerias
+#### R:
+
 ```{r}
 library(readxl)
-library(readr)
 library(tidyverse)
 library(psych)
-library(ggplot2)
-library(dplyr)
 ```
 
-Lectura de la base:
-```{r}
-Base1<-read_csv2("../data/INEC_Encuesta Estructural Empresarial_Tomo I_2021.csv")
-```
-
-```{python}
-
-df = pd.read_csv('../data/INEC_Encuesta Estructural Empresarial_Tomo I_2021.csv', delimiter = ';')
-
-```
-
-Seleccionar las variables y mostrar las 10 primeras filas:
-
-```{r}
-
-diezfilas=Base1[1:10,]
-print(diezfilas)
-
-```
-Variables que contienen información sobre el identificador del establecimiento, su actividad económica y la provincia donde se encuentra ubicado:
-
-```{r}
-id_estable<-Base1$id_empresa
-act_econ<-Base1$des_letra
-prov<-Base1$provincia
-print(id_estable)
-print(act_econ)
-print(prov)
-```
-
-
-### **Ejercicio 2: Generacion de estadisticas de resumen**
-
-Cargamos las librerias de para trabajar en python:
+#### python:
 
 ```{python}
 import pandas as pd
@@ -59,56 +23,88 @@ import numpy as np
 import sys
 ```
 
-Mostramos la version de python con que trabajamos:
+## Versiones de R y python
+
+#### R:
+
+```{r}
+R.version
+```
+
+#### python:
 
 ```{python}
 print(sys.version)
 ```
 
-Ahora importamos la base para trabajar en python:
-```{python}
-df = pd.read_csv('data/INEC_Encuesta Estructural Empresarial_Tomo I_2021.csv', delimiter = ';')
+## Ejercicios sobre manipulacion de datos
+
+### Ejercicio 1: Comprension y Manipulacion de Bases de Datos
+
+
+Lectura de la base:
+```{r}
+tabla <- read_csv2(file = "../data/INEC_Encuesta Estructural Empresarial_Tomo I_2021.csv")
 ```
+
+```{python}
+
+tabla = pd.read_csv('../data/INEC_Encuesta Estructural Empresarial_Tomo I_2021.csv', delimiter = ';')
+
+```
+
+Seleccionar las variables y mostrar las 10 primeras filas:
+
+> Ejercicio de relación del `.` y la `pipe`
+
+```{r}
+iris %>% 
+  group_by(Species) %>% 
+  summarise(media = mean(Petal.Length))
+
+write.csv(iris,"iris.csv")
+```
+
+```{python}
+
+pd.read_csv("iris.csv").groupby("Species").agg(medias = ("Petal.Length","mean"))
+
+```
+
+---
+
+Variables que contienen información sobre el identificador del establecimiento, su actividad económica y la provincia donde se encuentra ubicado:
+
+```{r}
+tabla %>% 
+  select(id_empresa,des_letra,provincia) %>% 
+  head(n = 10)
+```
+
+
+### **Ejercicio 2: Generacion de estadisticas de resumen**
+
 
 Con la base ya importada anteriormente procedemos a obtener la estadistica descriptiva de la variable de trabajadores afiliados en la empresa:
 
 ```{python}
-df.rename(columns={'v5090':'tafiliados'}, inplace=True)
-print (df['tafiliados'].describe())
+tabla.rename(columns={'v5090':'tafiliados'}, inplace=True)
+
+print (tabla['tafiliados'].describe())
 ```
 
 Ahora se procede a obtener el numero de empresas por provincia:
 
 ```{python}
-provincias ={
-    1:'Azuay',
-    2:'Bolivar',
-    3:'Cañar',
-    4:'Carchi',
-    5:'Cotopaxi',
-    6:'Chimborazo',
-    7:'El Oro',
-    8:'Esmeraldas',
-    9:'Guayas',
-    10:'Imbabura',
-    11:'Loja',
-    12:'Los Rios',
-    13:'Manabi',
-    14:'Morona Santiago',
-    15:'Napo',
-    16:'Pastaza',
-    17:'Pichincha',
-    18: 'Tungurahua',
-    19: 'Zamora Chinchipe',
-    20: 'Galapagos',
-    21: 'Sucumbios',
-    22: 'Orellana',
-    23: 'Santo Domingo de los Tsachilas',
-    24: 'Santa Elena'}
+provincias = pd.read_excel("../data/CODIFICACIÓN_2021.xlsx",sheet_name = "PROVINCIAS",usecols = "B:C",skiprows = 1)
 
-df['des_provincias'] = df['provincia'].map(provincias)
+provincias = provincias.rename(columns = {"DPA_PROVIN":"provincia"})
 
-conteo_provincia = df.groupby('des_provincias')['id_empresa'].count()
+
+tabla = tabla.merge(provincias, how = "left", on = "provincia")
+
+conteo_provincia = tabla.groupby('DPA_DESPRO')['id_empresa'].count()
+
 print(conteo_provincia)
 ```
 
@@ -117,16 +113,23 @@ print(conteo_provincia)
 Número de empresas en pichincha que pertenecen a una actividad económica específica:
 
 ```{r}
-Pic=filter(Base1,provincia==17)
-nPic=count(group_by(Pic,des_letra))
-print(nPic)
+
+tabla_pichincha <- tabla %>% 
+  filter(provincia == 17)
+
+tabla_pichincha %>% 
+  count(des_letra)
+
 ```
 
 Número de trabajadores promedio en las empresas:
 ```{r}
-nt=group_by(Pic,des_letra)%>%
-  summarise(prom_tra=mean(v5090))
-print(nt)
+
+numero_trabajadores <- tabla_pichincha %>% 
+  group_by(des_letra)%>%
+  summarise(prom_tra = mean(v5090, na.rm = FALSE))
+
+numero_trabajadores
 ```
 
 ### **Ejercicio 4: Analisis de Patrones**
@@ -134,24 +137,35 @@ print(nt)
 Ahora creamos una tabla de frecuencias por provincias de empresas que tienen mas de 50 empleados:
 
 ```{python}
-df_50trab = df[df['tafiliados'] > 50 ]
-tab_freq_emp = df_50trab.groupby('des_provincias')['id_empresa'].count()
+
+tabla_50trab = tabla[tabla['tafiliados'] > 50 ]
+
+tab_freq_emp = tabla_50trab.groupby('DPA_DESPRO')['id_empresa'].count()
+
 acumulado = tab_freq_emp.cumsum()
-freq_df = pd.concat([tab_freq_emp, acumulado], axis=1)
-freq_df.columns = ['Frequencia', 'Frecuencia Acumulada']
-print(freq_df)
+
+freq_tabla = pd.concat([tab_freq_emp, acumulado], axis=1)
+
+freq_tabla.columns = ['Frequencia', 'Frecuencia Acumulada']
+
+print(freq_tabla)
+
+
 ```
 
 Calculando entonces tambien el porcentaje de empresas con mas de 50 empleados por provincia:
 
 ```{python}
-total = df.groupby('des_provincias')['id_empresa'].nunique()
+
+total = tabla.groupby('DPA_DESPRO')['id_empresa'].nunique()
+
 porcentaje = tab_freq_emp / total 
 
 resumen = pd.concat([tab_freq_emp, acumulado, porcentaje], axis=1)
+
 resumen.columns = ['Frecuencia', 'Frecuencia Acumulada', 'Porcentaje']
 
-print(resumen)
+print(resumen.sort_values("Porcentaje",ascending = False))
 ```
 
 ###Ejercicio 5: Manipulación avanzada de una base de datos
@@ -159,69 +173,58 @@ print(resumen)
 Creación de una variable que indica si el establecimiento tiene más de 10 años de antigüedad:
 
 ```{r}
-Base13=Base1%>%
+
+tabla <- tabla %>%
   mutate(
-    antiguedad=ifelse(anio_ruc_dis<2009,1,0)
+    antiguedad = if_else(anio_ruc_dis < 2009,
+                       true = 1,
+                       false = 0)
   )
+
 ```
 
 Base de datos que contiene a los establecimientos que tienen más de 10 años de antigüedad y que tienen más de 20 trabajadores:
 ```{r}
-Base14=filter(Base13,antiguedad>0 & v5090>20)
+base_resultado <- tabla %>% 
+  filter(antiguedad > 0 & v5090 > 20)
+
+glimpse(base_resultado)
 ```
 
 ## Ejercicios sobre visualizacion de datos
 
 ### Ejercicio 1: Diagrama de barras por provincia
 Es necesaria una parte del código del ejercicio 4
-```{r,eval=FALSE}
-Base12=Base1%>%
-  mutate(
-    traba50=ifelse(v5090>=50,1,0)
-  )
-#a)
-np=filter(Base12,traba50==1)
-numero_empresasprov50=count(group_by(np,provincia))
-#print(numero_empresasprov50)
-#b)
-numero_empresasprov=count(group_by(Base1,provincia))
-#print(numero_empresasprov)
-porcentajes=(numero_empresasprov50$n/numero_empresasprov$n)*100
-numero_empresasprov50$Porcentajes=porcentajes
-#print(numero_empresasprov50)
+```{r}
+
+provincias <- read_excel("../data/CODIFICACIÓN_2021.xlsx",sheet = "PROVINCIAS",range = "B2:C26")
+
+resumen_provincias <- tabla %>% 
+  filter(v5090 >= 50) %>% 
+  count(provincia)
+
+resumen_provincias <- resumen_provincias %>% 
+  left_join(provincias,by = c("provincia" = "DPA_PROVIN"))
+
 ```
 
 Diagrama de barras que muestra el número de empresas por provincia:
-```{r,echo=FALSE}
-prv=transmute(numero_empresasprov,provincia=case_when(provincia=='01'~'Azuay',
-                                         provincia=='02'~'Bolívar',
-                                         provincia=='03'~ 'Cañar',
-                                         provincia=='04'~ 'Carchi',
-                                         provincia=='05'~ 'Cotopaxi',
-                                         provincia=='06'~ 'Chimborazo',
-                                         provincia=='07'~ 'El Oro',
-                                         provincia=='08'~ 'Esmeraldas',
-                                         provincia=='09'~ 'Guayas',
-                                         provincia=='10'~ 'Imbabura',
-                                         provincia=='11'~ 'Loja',
-                                         provincia=='12'~ 'Los Rios',
-                                         provincia=='13'~ 'Manabí',
-                                         provincia=='14'~ 'Morona Santiago',
-                                         provincia=='15'~ 'Napo',
-                                         provincia=='16'~ 'Pastaza',
-                                         provincia=='17'~ 'Pichincha',
-                                         provincia=='18'~ 'Tungurahua',
-                                         provincia=='19'~ 'Zamora',
-                                         provincia=='20'~ 'Galápagos',
-                                         provincia=='21'~ 'Sucumbíos',
-                                         provincia=='22'~ 'Orellana',
-                                         provincia=='23'~ 'Santo Domingo',
-                                         provincia=='24'~ 'Santa Elena'))
-numero_empresasprov$provincianame=prv
-colnames(numero_empresasprov)<-c('nprovincia','n','Provincia')
-ggplot(numero_empresasprov)+geom_bar(aes(x=Provincia$provincia,y=n),stat="identity")+labs(x="Provincia",y='Número de empresas')+theme(axis.text = element_text(angle = 90))
+```{r}
 
-
+resumen_provincias %>% 
+  mutate(DPA_DESPRO = factor(DPA_DESPRO),
+         DPA_DESPRO = fct_reorder(.f = DPA_DESPRO,
+                                  .x = n)) %>%  
+  ggplot() + 
+  geom_bar(aes(x = DPA_DESPRO, 
+               y = n),
+           stat="identity") + 
+  labs(x = "Provincia",
+       y = 'Número de empresas',
+       title = "Empresas encuestas en la ESESEM de acuerdo a la provincia",
+       caption = "Fuente: ENESEM (INEC)") +
+  theme_minimal() +
+  coord_flip()
 
 ```
 
@@ -230,19 +233,17 @@ ggplot(numero_empresasprov)+geom_bar(aes(x=Provincia$provincia,y=n),stat="identi
 Se calcula el valor agregado por provincia y se lo agrega a un dataset donde tambien se tenga el conteo de empresas existentes en estos territorios:
 
 ```{python}
-df_agrupado = df.groupby('des_provincias').agg({'valag':'sum', 'id_empresa':'count'})
+df_agrupado = tabla.groupby('DPA_DESPRO').agg({'valag':'sum', 'id_empresa':'count'})
+
+df_agrupado[["log_valag","log_id_empresa"]] = df_agrupado[["valag","id_empresa"]].apply(lambda x: np.log(x))
 
 plt.figure(figsize=(10,6))
-scatter = plt.scatter(df_agrupado['valag'], df_agrupado['id_empresa'], c=range(len(df_agrupado)), cmap='viridis')
+scatter = plt.scatter(df_agrupado['log_valag'], df_agrupado['log_id_empresa'], c=range(len(df_agrupado)), cmap='viridis')
 plt.xlabel('Valor Agregado Bruto')
 plt.ylabel('Numero de Empresas')
 plt.title('Relacion Valor Agregado Bruto y Numero de Empresas')
 plt.grid(True)
 plt.savefig('NumEmpresas_ValorAgregado.png', bbox_inches='tight', dpi= 600)
-<<<<<<< HEAD
 plt.show()
-=======
-plt.show()
->>>>>>> e5d0c97c2ae7a62b4723e910897ffa6e23b7964e
 
 ```
